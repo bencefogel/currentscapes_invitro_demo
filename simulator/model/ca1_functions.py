@@ -191,7 +191,6 @@ def addClustLocs(model, nsyn, Nclust, Ncell_per_clust, seed, midle=False, clocs=
         else:
             Elocs[i] = bg_Elocs[k]
             k = k + 1
-    print('added synapse locations')
     return Elocs, ind_clustpre, clDends
 
 

@@ -11,12 +11,6 @@ class CA1(object):
         self._topol()
         self._biophys()
 
-    # def _geom(self):
-    #     self.axon = h.Section()
-    #     # self.axon.L = 1
-    #     self.axon.L = 300
-    #     self.axon.diam = 1
-
     def _topol(self):
         self.soma = h.soma
         self.hill = h.hill
@@ -81,7 +75,6 @@ class CA1(object):
                     seg.g_pas = self.spinefactor * 1.0/self.RM#_dend
                     # sec.Ra = self.RA_dend # Ra is a section variable...
                 iseg = iseg + 1
-    print('CA1 model initialized')
 
 def propsCA1(model):
 

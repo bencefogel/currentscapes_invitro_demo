@@ -9,7 +9,6 @@ def sim_PlaceInput(model, Insyn, Irate, e_fname, i_fname, tstop, elimIspike=0): 
     if ((Insyn > 0) & (Irate > 0)) :
         etimes = eitimes[0]
         itimes = eitimes[1]
-        print(len(etimes[:,0]), 'E and ',  len(itimes[:,0]),  'I spikes read from file')
         if (elimIspike > 0):
             N_ispikes = len(itimes)
             i_index = np.sort(np.random.choice(N_ispikes, int(round((1-elimIspike) * N_ispikes)), replace=False))

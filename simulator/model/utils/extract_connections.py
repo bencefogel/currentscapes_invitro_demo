@@ -44,7 +44,7 @@ def get_internal_connections():
         for seg in sec.allseg():
             segments.append(seg)
 
-        for i in range(len(segments)):
+        for i, _ in enumerate(segments):
             if i > 0:
                 ref_internal.append(segments[i])
                 par_internal.append(segments[i - 1])
@@ -57,7 +57,6 @@ def get_internal_connections():
     connections_internal['ref'] = connections_internal['ref'].astype(str)
     connections_internal['par'] = connections_internal['par'].astype(str)
     connections_internal['ri'] = connections_internal['ri'].astype(float)
-
     return connections_internal
 
 
@@ -71,16 +70,18 @@ def get_connections(connections_external, connections_internal):
         connections.loc[connections["ref"] == ref, "par"] = par
         connections.loc[connections["ref"] == ref, "ri"] = ri
 
-    G = nx.from_pandas_edgelist(connections, source='par', target='ref')
-    connected_components = list(nx.connected_components(G))
-    print(f"Number of graphs originally: {len(connected_components)}")
+    # the following 3 lines are for sanity check
+    # G = nx.from_pandas_edgelist(connections, source='par', target='ref')
+    # connected_components = list(nx.connected_components(G))
+    # print(f"Number of graphs originally: {len(connected_components)}")
 
     # issue 1: dend2_0(0.5),soma(0.709232),0.15333 -> this is connected to soma(0.833333) in practice
     # issue 2: dend3_0(0.5),soma(0.443475),0.05747 -> this is connected to soma(0.5) in practice
     connections.loc[connections["ref"] == "dend2_0(0.5)", "par"] = "soma(0.833333)"
     connections.loc[connections["ref"] == "dend3_0(0.5)", "par"] = "soma(0.5)"
 
-    G_corrected = nx.from_pandas_edgelist(connections, source='par', target='ref')
-    connected_components_corrected = list(nx.connected_components(G_corrected))
-    print(f"Number of graph components after correction: {len(connected_components_corrected)}")
+    # the following 3 lines are for sanity check
+    # G_corrected = nx.from_pandas_edgelist(connections, source='par', target='ref')
+    # connected_components_corrected = list(nx.connected_components(G_corrected))
+    # print(f"Number of graph components after correction: {len(connected_components_corrected)}")
     return connections
