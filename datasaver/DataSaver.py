@@ -12,20 +12,21 @@ class DataSaver:
     def __init__(self, columns_in_chunk: int) -> None:
         self.columns_in_chunk = columns_in_chunk
 
-    def save_in_chunks(self, data: pd.DataFrame, output: str):
+    def save_in_chunks(self, data: pd.DataFrame, output: str, data_name: str = 'data') -> None:
         """
         Saves the data in chunks as .npy files along with a CSV file for the MultiIndex.
 
         The method splits the DataFrame into smaller chunks by columns and saves each chunk as
         a .npy file in the specified output directory. It also saves the DataFrame's MultiIndex
-        to a CSV file to ensure data consistency during loading.
+        to a uniquely named CSV file to ensure data consistency during loading.
 
         Args:
             data (pd.DataFrame): The DataFrame containing data to be saved. Must have a MultiIndex.
             output (str): The directory where the chunks and index file will be saved.
+            data_name (str): The name of the data variable to use in the index filename.
         """
         output = os.path.normpath(output)
-        print(f"Saving data into '{output}'...")
+        print(f"Saving {data_name} into '{output}'...")
         if not os.path.exists(output):
             os.makedirs(output)
 
@@ -49,7 +50,6 @@ class DataSaver:
 
             if not index_saved:
                 index = data.index.to_frame().reset_index(drop=True)
-                index_output_file = os.path.join(output, 'multiindex.csv')
+                index_output_file = os.path.join(output, f'{data_name}_multiindex.csv')
                 index.to_csv(index_output_file, index=False)
                 index_saved = True
-
