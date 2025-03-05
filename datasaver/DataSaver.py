@@ -24,6 +24,8 @@ class DataSaver:
             data (pd.DataFrame): The DataFrame containing data to be saved. Must have a MultiIndex.
             output (str): The directory where the chunks and index file will be saved.
         """
+        output = os.path.normpath(output)
+        print(f"Saving data into '{output}'...")
         if not os.path.exists(output):
             os.makedirs(output)
 
@@ -42,7 +44,7 @@ class DataSaver:
 
             chunk_values = values[:, start_idx:end_idx]
 
-            chunk_file = os.path.join(output, f"current_values_{i}.npy")
+            chunk_file = os.path.join(output, f'current_values_{i}.npy')
             np.save(chunk_file, chunk_values)
 
             if not index_saved:

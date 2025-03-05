@@ -40,7 +40,7 @@ class ModelSimulator:
         Returns:
             model (CA1): An instance of the CA1 model with configured synapses.
         """
-
+        print("Building CA1 model...")
         # Initialize model
         model = CA1()
         init_activeCA1(model)
@@ -91,6 +91,7 @@ class ModelSimulator:
             dict: The simulation data including membrane potential, membrane currents,
             segment connections and segment areas.
         """
+        print("Running simulation...")
         simulation_data = sim_PlaceInput(model, Insyn=200, Irate=7.4, e_fname=e_input, i_fname=i_input,
                                          tstop=simulation_time, elimIspike=False)
         simulation_data['connections'] = get_connections(self.connections['external'], self.connections['internal'])

@@ -38,6 +38,7 @@ class Preprocessor:
         Returns:
             pd.DataFrame: A DataFrame containing processed membrane current data.
         """
+        print("Preprocessing membrane currents...")
         self.membrane_current_preprocessor.combine_membrane_currents(self.simulation_data)
         im = self.membrane_current_preprocessor.merge_section_im(self.target)
         return im
@@ -50,6 +51,7 @@ class Preprocessor:
         Returns:
             pd.DataFrame: A DataFrame containing processed axial current data.
         """
+        print('Preprocessing axial currents...')
         self.axial_current_preprocessor.calculate_axial_currents(self.simulation_data)
         iax = self.axial_current_preprocessor.merge_section_iax(self.target)
         return iax
