@@ -1,8 +1,11 @@
+import os
+import numpy as np
+
 from currentscape_calculator.CurrentscapeCalculator import CurrentscapeCalculator
 from datasaver.DataSaver import DataSaver
 from simulator.ModelSimulator import ModelSimulator
 from preprocessor.Preprocessor import Preprocessor
-import os
+
 
 # model parameters:
 cluster_seed = 0
@@ -32,6 +35,7 @@ preprocessed_iax_directory = 'preprocessed/iax'
 preprocessed_datasaver = DataSaver(columns_in_chunk=1000)
 preprocessed_datasaver.save_in_chunks(im, os.path.join(output_directory, preprocessed_im_directory), 'im')
 preprocessed_datasaver.save_in_chunks(iax, os.path.join(output_directory, preprocessed_iax_directory), 'iax')
+preprocessed_datasaver.save_time_axis(output_directory + '/taxis', simulation_data['taxis'])
 
 # partition axial currents of the target (can be type-or region-specific)
 input_directory = os.path.join(output_directory, 'preprocessed')

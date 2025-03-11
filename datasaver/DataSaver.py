@@ -53,3 +53,6 @@ class DataSaver:
                 index_output_file = os.path.join(output, f'{data_name}_multiindex.csv')
                 index.to_csv(index_output_file, index=False)
                 index_saved = True
+
+    def save_time_axis(self, output:str, time_axis: np.ndarray) -> None:
+        np.save(output, time_axis)
