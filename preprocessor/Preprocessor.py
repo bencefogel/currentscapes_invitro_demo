@@ -10,9 +10,8 @@ class Preprocessor:
     Args:
         simulation_data (dict): The simulation data used for preprocessing.
         target (str): The target section for current preprocessing.
-        partitioning_strategy (str): Strategy for membrane current preprocessing.
     """
-    def __init__(self, simulation_data: dict, target: str, partitioning_strategy: str) -> None:
+    def __init__(self, simulation_data: dict, target: str) -> None:
         """
         Initializes the Preprocessor with simulation data, target, partitioning strategy,
         membrane current preprocessor and axial current preprocessor.
@@ -26,7 +25,6 @@ class Preprocessor:
         """
         self.simulation_data = simulation_data
         self.target = target
-        self.partitioning_strategy = partitioning_strategy
         self.membrane_current_preprocessor = MembraneCurrentPreprocessor()
         self.axial_current_preprocessor = AxialCurrentPreprocessor()
 

@@ -25,6 +25,8 @@ def simulate(model, tstop):
 
     taxis = np.array(trec)
     taxis_unique, index_unique = np.unique(taxis, return_index=True)
+    x = int((max(taxis_unique)) * 5)
+    taxis_downsampled = np.linspace(min(taxis_unique), max(taxis_unique), x)
 
     v_segments, v_arrays = preprocess_membrane_potential_data(v_segments, v, taxis_unique, index_unique)
     intrinsic_segments, intrinsic_arrays = preprocess_intrinsic_data(intrinsic_segments, intrinsic_currents, taxis_unique, index_unique)
@@ -33,5 +35,5 @@ def simulate(model, tstop):
     simulation_data = {'membrane_potential_data': [v_segments, v_arrays],
                        'intrinsic_data': [intrinsic_segments, intrinsic_arrays],
                        'synaptic_data': [synaptic_segments, synaptic_arrays],
-                       'taxis': taxis_unique}
+                       'taxis': taxis_downsampled}
     return simulation_data
