@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 from currentscape_calculator.CurrentscapeCalculator import CurrentscapeCalculator
 from datasaver.DataSaver import DataSaver
@@ -25,7 +24,7 @@ model = simulator.build_model(cluster_seed, random_seed)
 simulation_data = simulator.run_simulation(model, e_input, i_input, simulation_time)
 
 # preprocessing (set target section)
-preprocessor = Preprocessor(simulation_data, target)
+preprocessor = Preprocessor(simulation_data)
 im = preprocessor.preprocess_membrane_currents()
 iax = preprocessor.preprocess_axial_currents()
 
@@ -39,5 +38,14 @@ preprocessed_datasaver.save_time_axis(output_directory + '/taxis', simulation_da
 
 # partition axial currents of the target (can be type-or region-specific)
 input_directory = os.path.join(output_directory, 'preprocessed')
-currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, input_directory, output_directory)
-currentscape_calculator.calculate_currentscape()
+regions_list_directory = os.path.join(input_directory, 'regions_list_directory')
+currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, regions_list_directory)
+
+iax_idx = os.path.join(input_directory, 'iax', 'iax_multiindex.csv')
+iax_values = os.path.join(input_directory, 'iax', 'current_values_0.npy')
+im_idx = os.path.join(input_directory, 'im', 'im_multiindex.csv')
+im_values = os.path.join(input_directory, 'im', 'current_values_0.npy')
+
+im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax_idx, iax_values, im_idx, im_values,
+                                                                          timepoints=None)
+
