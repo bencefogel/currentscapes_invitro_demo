@@ -11,7 +11,7 @@ class Preprocessor:
         simulation_data (dict): The simulation data used for preprocessing.
         target (str): The target section for current preprocessing.
     """
-    def __init__(self, simulation_data: dict, target: str) -> None:
+    def __init__(self, simulation_data: dict) -> None:
         """
         Initializes the Preprocessor with simulation data, target, partitioning strategy,
         membrane current preprocessor and axial current preprocessor.
@@ -24,7 +24,7 @@ class Preprocessor:
             axial_current_preprocessor (AxialCurrentPreprocessor): An instance for processing axial currents.
         """
         self.simulation_data = simulation_data
-        self.target = target
+        self.target = 'soma'  # soma is always the target compartment for the preprocessing steps
         self.membrane_current_preprocessor = MembraneCurrentPreprocessor()
         self.axial_current_preprocessor = AxialCurrentPreprocessor()
 
