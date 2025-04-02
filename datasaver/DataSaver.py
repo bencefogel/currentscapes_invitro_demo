@@ -44,7 +44,7 @@ class DataSaver:
 
             chunk_values = values[:, start_idx:end_idx]
 
-            chunk_file = os.path.join(output, f'current_values_{i}.csv')
+            chunk_file = os.path.join(output, f'current_values_{start_idx}_{end_idx}.csv')
             df = pd.DataFrame(data=chunk_values, index=data.index)
             df.columns = list(df.columns)
             df.to_csv(chunk_file)

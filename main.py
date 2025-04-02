@@ -42,8 +42,8 @@ regions_list_directory = os.path.join(input_directory, 'regions_list_directory')
 currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, regions_list_directory)
 
 
-iax = os.path.join(input_directory, 'iax', 'current_values_0.csv')
-im = os.path.join(input_directory, 'im', 'current_values_0.csv')
+iax = os.path.join(input_directory, 'iax', 'current_values_0_4.csv')
+im = os.path.join(input_directory, 'im', 'current_values_0_4.csv')
 
 im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax, im, timepoints=None)
 
