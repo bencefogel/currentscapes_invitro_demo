@@ -9,10 +9,12 @@ class CurrentscapeCalculator:
         self.partitioning_strategy = partitioning_strategy
         self.regions_list_directory = regions_list_directory,
 
-    def calculate_currentscape(self, iax_idx, iax_values, im_idx, im_values, timepoints):
+    def calculate_currentscape(self, iax, im, timepoints):
         # Load data for the given pair of files
-        df_iax = self.load_df(iax_idx, iax_values)
-        df_im = self.load_df(im_idx, im_values)
+        df_iax = pd.read_csv(iax, index_col=[0,1])
+        df_iax.columns = df_iax.columns.astype(int)
+        df_im = pd.read_csv(im, index_col=[0,1])
+        df_im.columns = df_im.columns.astype(int)
 
         if self.partitioning_strategy == 'type':
             df_im.sort_index(axis=0, level=(0, 1), inplace=True)

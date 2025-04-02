@@ -12,7 +12,7 @@ random_seed = 30
 # simulation parameters:
 e_input = 'E:/FBence/CA1_PFs/synaptic_input/Espikes_d10_Ne2000_Re0.5_rseed1_rep0.dat'
 i_input = 'E:/FBence/CA1_PFs/synaptic_input/Ispikes_d10_Ni200_Ri7.4_rseed1_rep0.dat'
-simulation_time = 1 * 1000
+simulation_time = 0.001 * 1000
 output_directory = 'output'
 # partitioning parameters:
 target = 'soma'
@@ -41,11 +41,9 @@ input_directory = os.path.join(output_directory, 'preprocessed')
 regions_list_directory = os.path.join(input_directory, 'regions_list_directory')
 currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, regions_list_directory)
 
-iax_idx = os.path.join(input_directory, 'iax', 'iax_multiindex.csv')
-iax_values = os.path.join(input_directory, 'iax', 'current_values_0.npy')
-im_idx = os.path.join(input_directory, 'im', 'im_multiindex.csv')
-im_values = os.path.join(input_directory, 'im', 'current_values_0.npy')
 
-im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax_idx, iax_values, im_idx, im_values,
-                                                                          timepoints=None)
+iax = os.path.join(input_directory, 'iax', 'current_values_0.csv')
+im = os.path.join(input_directory, 'im', 'current_values_0.csv')
+
+im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax, im, timepoints=None)
 

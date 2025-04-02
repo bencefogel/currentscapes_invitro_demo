@@ -38,21 +38,17 @@ class DataSaver:
 
         num_chunks = values.shape[1] // self.columns_in_chunk + (1 if values.shape[1] % self.columns_in_chunk != 0 else 0)
 
-        index_saved = False
         for i in range(num_chunks):
             start_idx = i * self.columns_in_chunk
             end_idx = min((i + 1) * self.columns_in_chunk, values.shape[1])
 
             chunk_values = values[:, start_idx:end_idx]
 
-            chunk_file = os.path.join(output, f'current_values_{i}.npy')
-            np.save(chunk_file, chunk_values)
+            chunk_file = os.path.join(output, f'current_values_{i}.csv')
+            df = pd.DataFrame(data=chunk_values, index=data.index)
+            df.columns = list(df.columns)
+            df.to_csv(chunk_file)
 
-            if not index_saved:
-                index = data.index.to_frame().reset_index(drop=True)
-                index_output_file = os.path.join(output, f'{data_name}_multiindex.csv')
-                index.to_csv(index_output_file, index=False)
-                index_saved = True
 
     def save_time_axis(self, output:str, time_axis: np.ndarray) -> None:
         np.save(output, time_axis)
