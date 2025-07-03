@@ -37,28 +37,6 @@ def measure_NMDA_current(model):
     return NMDA, NMDA_segments
 
 
-def measure_GABA_current(model):
-    GABA = []
-    GABA_segments = []
-
-    for syn in model.GABAlist:
-        vec = h.Vector().record(syn._ref_i)
-        GABA.append(vec)
-        GABA_segments.append(syn.get_segment())
-    return GABA, GABA_segments
-
-
-def measure_GABA_B_current(model):
-    GABA_B = []
-    GABA_B_segments = []
-
-    for syn in model.GABA_Blist:
-        vec = h.Vector().record(syn._ref_i)
-        GABA_B.append(vec)
-        GABA_B_segments.append(syn.get_segment())
-    return GABA_B, GABA_B_segments
-
-
 def record_synaptic_currents(model):
     """
     Records synaptic currents for all synapse types (AMPA, NMDA, GABA, GABA-B).
@@ -73,21 +51,15 @@ def record_synaptic_currents(model):
     """
     AMPA, AMPA_segments = measure_AMPA_current(model)
     NMDA, NMDA_segments = measure_NMDA_current(model)
-    GABA, GABA_segments = measure_GABA_current(model)
-    GABA_B, GABA_B_segments = measure_GABA_B_current(model)
 
     synaptic_currents = {
         'AMPA': AMPA,
-        'NMDA': NMDA,
-        'GABA': GABA,
-        'GABA_B': GABA_B
+        'NMDA': NMDA
     }
 
     synaptic_segments = {
         'AMPA': AMPA_segments,
-        'NMDA': NMDA_segments,
-        'GABA': GABA_segments,
-        'GABA_B': GABA_B_segments
+        'NMDA': NMDA_segments
     }
 
     return synaptic_segments, synaptic_currents

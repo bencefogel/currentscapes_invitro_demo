@@ -272,7 +272,7 @@ def genClusts(model, Nclust, Ncell_per_clust, minL, seed, clocs=None):
     return locs, clDends
 
 
-def add_syns(model, Elocs, Ilocs):
+def add_syns(model, Elocs):
     model.AMPAlist = []
     model.ncAMPAlist = []
     AMPA_gmax = 0.6 / 1000.  # Set in nS and convert to muS data.Agmax
@@ -300,36 +300,20 @@ def add_syns(model, Elocs, Ilocs):
         NMDA.tau1 = 2  # data.Ntau1
         NMDA.tau2 = 50  # data.Ntau2
         NC = h.NetCon(h.nil, NMDA, 0, 0, NMDA_gmax)
-        x = float(loc[1])
         model.NMDAlist.append(NMDA)
         model.ncNMDAlist.append(NC)
 
-    model.GABAlist = []
-    model.ncGABAlist = []
-    GABA_gmax = 0.2 / 1000.  # Set in nS and convert to muS data.Igmax 0.1/1000
 
-    model.GABA_Blist = []
-    model.ncGABA_Blist = []
-    GABAB_gmax = 0.2 / 1000.  # Set in nS and convert to muS data.Bgmax 0.1/1000
+def genDendLocs(stimulated_dend=108, nsyn=30, spread=[0.4, 0.6]):
+    # insert nsyn synapses to dendrites dends, uniform spread within a branch
+    locs = []
 
-    for loc in Ilocs:
-        locInd = int(loc[0])
-        if (locInd == -1):
-            synloc = model.soma
-        else:
-            synloc = model.dends[int(loc[0])]
-        GABA = h.Exp2Syn(float(loc[1]), sec=synloc)
-        GABA.tau1 = 0.1  # data.Itau1
-        GABA.tau2 = 4  # data.Itau2
-        GABA.e = -65  # data.Irev
-        NC = h.NetCon(h.nil, GABA, 0, 0, GABA_gmax)
-        model.GABAlist.append(GABA)
-        model.ncGABAlist.append(NC)
+    isd = (spread[1]-spread[0])/float(nsyn)
+    pos = np.arange(spread[0], spread[1], isd)[0:nsyn]
 
-        GABAB = h.Exp2Syn(float(loc[1]), sec=synloc)
-        GABAB.tau1 = 1  # data.Btau1
-        GABAB.tau2 = 40  # data.Btau2
-        GABAB.e = -80  # data.Brev
-        NC = h.NetCon(h.nil, GABAB, 0, 0, GABAB_gmax)
-        model.GABA_Blist.append(GABAB)
-        model.ncGABA_Blist.append(NC)
+    if (len(pos) != nsyn):
+        # print ('error: synapse number mismatch, stop simulation! dend:', i_dend, 'created=', len(pos), '!=', nsyn_dend)
+        sys.exit(1)
+    for p in pos:
+        locs.append([stimulated_dend, p])
+    return locs

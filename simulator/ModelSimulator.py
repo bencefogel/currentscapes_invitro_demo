@@ -29,7 +29,7 @@ class ModelSimulator:
         self.connections = {}
         self.segment_areas = pd.DataFrame()
 
-    def build_model(self, cluster_seed: int, random_seed: int) -> CA1:
+    def build_model(self, stimulated_dend) -> CA1:
         """
         Builds the CA1 model with synaptic connections.
 
@@ -46,29 +46,10 @@ class ModelSimulator:
         init_activeCA1(model)
 
         # Generate excitatory synapse locations and cluster locations
-        Elocs, ind_clust, clDends = addClustLocs(
-            model, nsyn=2000, Nclust=12, Ncell_per_clust=20,
-            seed=random_seed, midle=True, clocs=[], Lmin=60
-        )
-
-        clocs = np.zeros((16, 12))  # Placeholder shape
-        clocs[cluster_seed, :] = clDends
-
-        # Generate inhibitory synapse locations
-        Isomalocs = [[-1, 0.5] for _ in range(80)]
-        np.random.seed(10001)
-        Idendlocs = genRandomLocs(model, int(200 - 80), 10001)
-        np.random.shuffle(Idendlocs)
-        np.random.shuffle(Isomalocs)
-        Ilocs = Isomalocs + Idendlocs
-
         # Add synapses to model
-        add_syns(model, Elocs, Ilocs)
-
-        # Modify clustered excitatory synapses
-        for syn_id in ind_clust:
-            model.ncAMPAlist[syn_id].weight[0] = 0.0010
-            model.ncNMDAlist[syn_id].weight[0] = 0.0012
+        from simulator.model.ca1_functions import genDendLocs
+        Elocs = genDendLocs(stimulated_dend)
+        add_syns(model, Elocs)
 
         # Get section and segment connections
         self.connections['external'] = get_external_connections()

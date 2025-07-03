@@ -17,10 +17,11 @@ output_directory = 'output'
 # partitioning parameters:
 target = 'soma'
 partitioning_strategy = 'type'
+stimulated_dend = 108
 
 # generate simulation data
 simulator = ModelSimulator()
-model = simulator.build_model(cluster_seed, random_seed)
+model = simulator.build_model(stimulated_dend)
 simulation_data = simulator.run_simulation(model, 8)
 
 # preprocessing (set target section)
