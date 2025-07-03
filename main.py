@@ -10,8 +10,8 @@ from preprocessor.Preprocessor import Preprocessor
 cluster_seed = 0
 random_seed = 30
 # simulation parameters:
-e_input = 'E:/FBence/CA1_PFs/synaptic_input/Espikes_d10_Ne2000_Re0.5_rseed1_rep0.dat'
-i_input = 'E:/FBence/CA1_PFs/synaptic_input/Ispikes_d10_Ni200_Ri7.4_rseed1_rep0.dat'
+e_input = 'L:/FBence/CA1_PFs/synaptic_input/Espikes_d10_Ne2000_Re0.5_rseed1_rep0.dat'
+i_input = 'L:/FBence/CA1_PFs/synaptic_input/Ispikes_d10_Ni200_Ri7.4_rseed1_rep0.dat'
 simulation_time = 0.001 * 1000
 output_directory = 'output'
 # partitioning parameters:
@@ -21,7 +21,7 @@ partitioning_strategy = 'type'
 # generate simulation data
 simulator = ModelSimulator()
 model = simulator.build_model(cluster_seed, random_seed)
-simulation_data = simulator.run_simulation(model, e_input, i_input, simulation_time)
+simulation_data = simulator.run_simulation(model, 8)
 
 # preprocessing (set target section)
 preprocessor = Preprocessor(simulation_data)
@@ -41,9 +41,7 @@ input_directory = os.path.join(output_directory, 'preprocessed')
 regions_list_directory = os.path.join(input_directory, 'regions_list_directory')
 currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, regions_list_directory)
 
-
 iax = os.path.join(input_directory, 'iax', 'current_values_0_4.csv')
 im = os.path.join(input_directory, 'im', 'current_values_0_4.csv')
 
 im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax, im, timepoints=None)
-

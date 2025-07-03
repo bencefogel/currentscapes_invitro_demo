@@ -3,40 +3,29 @@ import numpy as np
 import simulator.model.simulation as simulation
 from numpy import loadtxt
 
-def sim_PlaceInput(model, Insyn, Irate, e_fname, i_fname, tstop, elimIspike=0): #sim_time in msec
-    eitimes = readTrain(e_fname, i_fname)
 
-    if ((Insyn > 0) & (Irate > 0)) :
-        etimes = eitimes[0]
-        itimes = eitimes[1]
-        if (elimIspike > 0):
-            N_ispikes = len(itimes)
-            i_index = np.sort(np.random.choice(N_ispikes, int(round((1-elimIspike) * N_ispikes)), replace=False))
-            itimes = itimes[i_index]
-
-    # Run
-    fih = simulation.h.FInitializeHandler(1, lambda: initSpikes(model, etimes, itimes))
+def SIM_nsynIteration(model, maxNsyn, nsyn, tInterval, onset, direction='IN', tstop=300):
+    # next, synapses are activated together
+    etimes = genDSinput(nsyn, maxNsyn, tInterval, onset * 1000, direction)
+    fih = simulation.h.FInitializeHandler(1, lambda: initSpikes_dend(model, etimes))
     simulation_data = simulation.simulate(model, tstop)
-    return  simulation_data
+    simulation_data['etimes'] = etimes
+    return simulation_data
 
-def initSpikes(model, etimes, itimes):
+
+def genDSinput(nsyn, Nmax, tInterval, onset, direction='OUT'):
+    # a single train with nsyn inputs - either in the in or in the out direction
+    times = np.zeros([nsyn, 2])
+    if (direction=='OUT'):
+        times[:,0] = np.arange(0, nsyn)
+    else:
+        times[:,0] = np.arange(Nmax-1, Nmax-nsyn-1, -1)
+    times[:,1] = np.arange(0, nsyn*tInterval, tInterval)[0:nsyn] + onset
+    return times
+
+
+def initSpikes_dend(model, etimes):
     if (len(etimes)>0):
         for s in etimes:
             model.ncAMPAlist[int(s[0])].event(float(s[1]))
             model.ncNMDAlist[int(s[0])].event(float(s[1]))
-
-    if (len(itimes)>0):
-        for s in itimes:
-            model.ncGABAlist[int(s[0])].event(float(s[1]))
-            model.ncGABA_Blist[int(s[0])].event(float(s[1]))
-
-def readTrain(e_fname, i_fname):
-    fname = e_fname
-    Etimes = loadtxt(fname, comments="#", delimiter=" ", unpack=False)
-
-    fname = i_fname
-    Itimes = loadtxt(fname, comments="#", delimiter=" ", unpack=False)
-
-    times = [Etimes, Itimes]
-    return times
-

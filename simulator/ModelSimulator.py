@@ -6,7 +6,7 @@ import simulator.model.saveClass as sc
 import simulator.model.simulation as simulation
 from simulator.model.ca1_model import CA1
 from simulator.model.ca1_functions import init_activeCA1, addClustLocs, genRandomLocs, add_syns
-from simulator.model.sim_functions import sim_PlaceInput
+from simulator.model.sim_functions import SIM_nsynIteration
 from simulator.model.utils.extract_connections import get_external_connections, get_internal_connections, get_connections
 from simulator.model.utils.extract_areas import get_segment_areas
 
@@ -76,24 +76,9 @@ class ModelSimulator:
         self.segment_areas = get_segment_areas()
         return model
 
-    def run_simulation(self, model: CA1, e_input: str, i_input: str, simulation_time: int) -> dict:
-        """
-        Runs a simulation on the provided CA1 model with specified input files
-        and parameters. Returns the simulation data.
-
-        Args:
-            model (CA1): The CA1 model instance.
-            e_input (str): Path to the excitatory input file.
-            i_input (str): Path to the inhibitory input file.
-            simulation_time (float): Duration of the simulation in milliseconds.
-
-        Returns:
-            dict: The simulation data including membrane potential, membrane currents,
-            segment connections and segment areas.
-        """
+    def run_simulation(self, model: CA1, nsyn: int) -> dict:
         print("Running simulation...")
-        simulation_data = sim_PlaceInput(model, Insyn=200, Irate=7.4, e_fname=e_input, i_fname=i_input,
-                                         tstop=simulation_time, elimIspike=False)
+        simulation_data = SIM_nsynIteration(model, maxNsyn=30, nsyn=nsyn, tInterval=0.3, onset=0.3, direction='IN', tstop=900)
         simulation_data['connections'] = get_connections(self.connections['external'], self.connections['internal'])
         simulation_data['areas'] = self.segment_areas
         return simulation_data
