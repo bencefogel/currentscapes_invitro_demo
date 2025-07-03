@@ -1,5 +1,5 @@
 import os
-
+import numpy as np
 from currentscape_calculator.CurrentscapeCalculator import CurrentscapeCalculator
 from datasaver.DataSaver import DataSaver
 from simulator.ModelSimulator import ModelSimulator
@@ -7,12 +7,6 @@ from preprocessor.Preprocessor import Preprocessor
 
 
 # model parameters:
-cluster_seed = 0
-random_seed = 30
-# simulation parameters:
-e_input = 'L:/FBence/CA1_PFs/synaptic_input/Espikes_d10_Ne2000_Re0.5_rseed1_rep0.dat'
-i_input = 'L:/FBence/CA1_PFs/synaptic_input/Ispikes_d10_Ni200_Ri7.4_rseed1_rep0.dat'
-simulation_time = 0.001 * 1000
 output_directory = 'output'
 # partitioning parameters:
 target = 'soma'
@@ -30,19 +24,19 @@ im = preprocessor.preprocess_membrane_currents()
 iax = preprocessor.preprocess_axial_currents()
 
 # save results
-preprocessed_im_directory = 'preprocessed/im'
-preprocessed_iax_directory = 'preprocessed/iax'
-preprocessed_datasaver = DataSaver(columns_in_chunk=1000)
-preprocessed_datasaver.save_in_chunks(im, os.path.join(output_directory, preprocessed_im_directory), 'im')
-preprocessed_datasaver.save_in_chunks(iax, os.path.join(output_directory, preprocessed_iax_directory), 'iax')
-preprocessed_datasaver.save_time_axis(output_directory + '/taxis', simulation_data['taxis'])
+preprocessed_directory = os.path.join(output_directory, 'preprocessed')
+if not os.path.exists(preprocessed_directory):
+    os.makedirs(preprocessed_directory)
+im.to_csv(os.path.join(preprocessed_directory, 'im.csv'))
+iax.to_csv(os.path.join(preprocessed_directory, 'iax.csv'))
+
 
 # partition axial currents of the target (can be type-or region-specific)
-input_directory = os.path.join(output_directory, 'preprocessed')
-regions_list_directory = os.path.join(input_directory, 'regions_list_directory')
+regions_list_directory = os.path.join('currentscape_calculator', 'region_list')
 currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, regions_list_directory)
 
-iax = os.path.join(input_directory, 'iax', 'current_values_0_4.csv')
-im = os.path.join(input_directory, 'im', 'current_values_0_4.csv')
+im_fpath = os.path.join(preprocessed_directory, 'im.csv')
+iax_fpath = os.path.join(preprocessed_directory, 'iax.csv')
 
-im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax, im, timepoints=None)
+im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax_fpath, im_fpath, timepoints=np.arange(0,5))
+

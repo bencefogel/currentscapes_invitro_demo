@@ -47,23 +47,3 @@ class CurrentscapeCalculator:
         multiindex = pd.MultiIndex.from_frame(index)
         df = pd.DataFrame(data=values, index=multiindex)
         return df
-
-if __name__ == '__main__':
-    import os
-
-    output_directory = 'output'
-    # partitioning parameters:
-    target = 'soma'
-    partitioning_strategy = 'type'
-
-    input_directory = os.path.join(output_directory, 'preprocessed')
-    regions_list_directory = os.path.join(input_directory, 'regions_list_directory')
-    currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, regions_list_directory)
-
-    iax_idx = os.path.join(input_directory, 'iax', 'iax_multiindex.csv')
-    iax_values = os.path.join(input_directory, 'iax', 'current_values_0.npy')
-    im_idx = os.path.join(input_directory, 'im', 'im_multiindex.csv')
-    im_values = os.path.join(input_directory, 'im', 'current_values_0.npy')
-
-    im_part_pos, im_part_neg = currentscape_calculator.calculate_currentscape(iax_idx, iax_values, im_idx, im_values,
-                                                                              timepoints=None)
