@@ -46,6 +46,6 @@ v_idx = np.where(np.array(simulation_data['membrane_potential_data'][0]).astype(
 v_target = np.array(simulation_data['membrane_potential_data'][1])[v_idx].squeeze()
 taxis = simulation_data['taxis']
 filename = 'test.pdf'
-tmin=0
-tmax=98
+tmin = 280
+tmax = 380
 plot_currentscape(part_pos, part_neg, v_target, taxis, tmin, tmax, filename, return_segs=False, segments_preselected=False, partitionby=partitioning_strategy)

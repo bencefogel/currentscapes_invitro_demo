@@ -59,9 +59,7 @@ class ModelSimulator:
 
     def run_simulation(self, model: CA1, nsyn: int) -> dict:
         print("Running simulation...")
-        # simulation_data = SIM_nsynIteration(model, maxNsyn=30, nsyn=nsyn, tInterval=0.3, onset=0.3, direction='IN', tstop=900)
-        simulation_data = SIM_nsynIteration(model, maxNsyn=2, nsyn=nsyn, tInterval=0.001, onset=0.01, direction='IN',
-                                            tstop=100)
+        simulation_data = SIM_nsynIteration(model, maxNsyn=30, nsyn=nsyn, tInterval=0.3, onset=0.3, direction='IN', tstop=900)
         simulation_data['connections'] = get_connections(self.connections['external'], self.connections['internal'])
         simulation_data['areas'] = self.segment_areas
         return simulation_data
