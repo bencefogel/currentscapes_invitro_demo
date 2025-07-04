@@ -12,10 +12,10 @@ def plot_currentscape(part_pos, part_neg, vm, taxis, tmin, tmax, filename, retur
         vm_seg = vm
     else:
         segment_indexes = np.flatnonzero((taxis > tmin) & (taxis < tmax))
-        part_pos_seg = part_pos.iloc[:, segment_indexes]
-        part_neg_seg = part_neg.iloc[:, segment_indexes]
+        part_pos_seg = part_pos[segment_indexes]
+        part_neg_seg = part_neg[segment_indexes]
         t_seg = taxis[segment_indexes]
-        vm_seg = vm[segment_indexes]
+        vm_seg = vm
 
     # Create charts
     totalpos = create_currsum_pos_chart(part_pos_seg, t_seg)

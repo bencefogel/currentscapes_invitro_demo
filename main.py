@@ -39,13 +39,13 @@ currentscape_calculator = CurrentscapeCalculator(target, partitioning_strategy, 
 im_fpath = os.path.join(preprocessed_directory, 'im.csv')
 iax_fpath = os.path.join(preprocessed_directory, 'iax.csv')
 
-part_pos, part_neg = currentscape_calculator.calculate_currentscape(iax_fpath, im_fpath, timepoints=None)
+taxis = simulation_data['taxis']
+tmin = 280
+tmax = 285
+part_pos, part_neg = currentscape_calculator.calculate_currentscape(iax_fpath, im_fpath, taxis, tmin, tmax)
 
 # run visualization
 v_idx = np.where(np.array(simulation_data['membrane_potential_data'][0]).astype(str) == f'{target}(0.5)')
-v_target = np.array(simulation_data['membrane_potential_data'][1])[v_idx].squeeze()
-taxis = simulation_data['taxis']
+v_target = np.array(simulation_data['membrane_potential_data'][1])[v_idx].squeeze()[np.flatnonzero((taxis > tmin) & (taxis < tmax))]
 filename = 'test.pdf'
-tmin = 280
-tmax = 380
 plot_currentscape(part_pos, part_neg, v_target, taxis, tmin, tmax, filename, return_segs=False, segments_preselected=False, partitionby=partitioning_strategy)

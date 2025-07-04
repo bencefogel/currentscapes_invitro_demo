@@ -8,7 +8,7 @@ from currentscape_calculator.partitioning_order import create_directed_graph, ge
 import networkx as nx
 
 
-def partition_iax(im: DataFrame, iax: DataFrame, timepoints: list, target: str, partition_by='type',
+def partition_iax(im: DataFrame, iax: DataFrame, timepoints, target: str, partition_by='type',
                   regions_list_directory=None) -> tuple[DataFrame, DataFrame]:
     """
     Partitions axial currents into membrane currents across multiple time points and updates a copy of the membrane currents DataFrame.

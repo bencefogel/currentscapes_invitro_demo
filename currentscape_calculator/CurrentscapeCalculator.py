@@ -9,7 +9,7 @@ class CurrentscapeCalculator:
         self.partitioning_strategy = partitioning_strategy
         self.regions_list_directory = regions_list_directory,
 
-    def calculate_currentscape(self, iax, im, timepoints):
+    def calculate_currentscape(self, iax, im, taxis, tmin, tmax):
         # Load data for the given pair of files
         df_iax = pd.read_csv(iax, index_col=[0,1])
         df_iax.columns = df_iax.columns.astype(int)
@@ -20,12 +20,14 @@ class CurrentscapeCalculator:
             df_im.sort_index(axis=0, level=(0, 1), inplace=True)
 
         # if no timepoints is selected, we perform the partitioning on the whole dataframe
-        if timepoints is None:
+        if tmin and tmax is None:
             t_max = df_im.shape[1]
-            timepoints = list(range(t_max))
+            segment_indexes = list(range(t_max))
+        else:
+            segment_indexes = np.flatnonzero((taxis > tmin) & (taxis < tmax))
 
         # Perform the partitioning
-        im_part_pos, im_part_neg = partition_iax(df_im, df_iax, timepoints=timepoints, target=self.target,
+        im_part_pos, im_part_neg = partition_iax(df_im, df_iax, timepoints=segment_indexes, target=self.target,
                                                  partition_by=self.partitioning_strategy,
                                                  regions_list_directory=self.regions_list_directory)
         return im_part_pos, im_part_neg
