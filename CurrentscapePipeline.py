@@ -1,5 +1,7 @@
 import os
 import numpy as np
+from neuron import nrn_dll_sym_nt
+
 from currentscape_calculator.CurrentscapeCalculator import CurrentscapeCalculator
 from simulator.ModelSimulator import ModelSimulator
 from preprocessor.Preprocessor import Preprocessor
@@ -7,8 +9,28 @@ from currentscape_visualization.currentscape import plot_currentscape
 
 
 class CurrentscapePipeline:
-    def __init__(self, output_dir='output', target='soma', partitioning='type', stim_dend=108, tmin=280, tmax=380,
-                 currentscape_filename='currentscape.pdf'):
+    def __init__(
+        self,
+        output_dir='output',
+        target='soma',
+        partitioning='type',
+        stim_dend=108,
+        tmin=280,
+        tmax=380,
+        currentscape_filename='currentscape.pdf',
+        maxNsyn=30,
+        nsyn=8,
+        tInterval=0.3,
+        onset=300,
+        direction='IN',
+        tstop=900
+    ):
+        self.maxNsyn = maxNsyn
+        self.nsyn = nsyn
+        self.tInterval = tInterval
+        self.onset = onset
+        self.direction = direction
+        self.tstop = tstop
         self.output_dir = output_dir
         self.target = target
         self.partitioning = partitioning
@@ -22,7 +44,8 @@ class CurrentscapePipeline:
     def run_simulation(self):
         simulator = ModelSimulator()
         model = simulator.build_model(self.stim_dend)
-        self.simulation_data = simulator.run_simulation(model, 8)
+        self.simulation_data = simulator.run_simulation(model, self.maxNsyn, self.nsyn,
+                                                        self.tInterval, self.onset, self.direction, self.tstop)
         self.taxis = self.simulation_data['taxis']
 
     def preprocess(self):

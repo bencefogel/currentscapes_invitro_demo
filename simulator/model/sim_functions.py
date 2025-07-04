@@ -6,7 +6,7 @@ from numpy import loadtxt
 
 def SIM_nsynIteration(model, maxNsyn, nsyn, tInterval, onset, direction='IN', tstop=300):
     # next, synapses are activated together
-    etimes = genDSinput(nsyn, maxNsyn, tInterval, onset * 1000, direction)
+    etimes = genDSinput(nsyn, maxNsyn, tInterval, onset, direction)
     fih = simulation.h.FInitializeHandler(1, lambda: initSpikes_dend(model, etimes))
     simulation_data = simulation.simulate(model, tstop)
     simulation_data['etimes'] = etimes
