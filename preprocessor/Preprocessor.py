@@ -5,24 +5,18 @@ from preprocessor.AxialCurrentPreprocessor import AxialCurrentPreprocessor
 
 class Preprocessor:
     """
-    Controls preprocessing methods for axial, intrinsic, and synaptic currents.
+    Represents a class responsible for preprocessing simulation data to prepare
+    and transform current data (membrane and axial currents) for further analysis.
 
-    Args:
-        simulation_data (dict): The simulation data used for preprocessing.
-        target (str): The target section for current preprocessing.
+
+    Attributes:
+        simulation_data (dict): The data used for preprocessing, derived from simulations.
+        target (str): The target section for current preprocessing, defaulting to 'soma'.
+        membrane_current_preprocessor (MembraneCurrentPreprocessor): An instance for handling membrane currents.
+        axial_current_preprocessor (AxialCurrentPreprocessor): An instance for handling axial currents.
     """
-    def __init__(self, simulation_data: dict) -> None:
-        """
-        Initializes the Preprocessor with simulation data, target, partitioning strategy,
-        membrane current preprocessor and axial current preprocessor.
 
-        Args:
-            simulation_data (dict): The simulation data used for preprocessing.
-            target (str): The target section for current preprocessing.
-            partitioning_strategy (str): Strategy for membrane current preprocessing.
-            membrane_current_preprocessor (MembraneCurrentPreprocessor): An instance for processing membrane currents.
-            axial_current_preprocessor (AxialCurrentPreprocessor): An instance for processing axial currents.
-        """
+    def __init__(self, simulation_data: dict) -> None:
         self.simulation_data = simulation_data
         self.target = 'soma'  # soma is always the target compartment for the preprocessing steps
         self.membrane_current_preprocessor = MembraneCurrentPreprocessor()
@@ -53,4 +47,3 @@ class Preprocessor:
         self.axial_current_preprocessor.calculate_axial_currents(self.simulation_data)
         iax = self.axial_current_preprocessor.merge_section_iax(self.target)
         return iax
-

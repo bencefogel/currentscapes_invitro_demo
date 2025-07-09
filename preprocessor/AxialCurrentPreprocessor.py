@@ -59,7 +59,7 @@ class AxialCurrentPreprocessor:
 
     def merge_section_iax(self, target: str) -> pd.DataFrame:
         """
-        Merges axial currents for a specified target section ('soma' or 'dendrite').
+        Merges axial currents for a specified target section.
 
         Args:
             target (str): The target section to merge ('soma' or a specific 'dend' name).

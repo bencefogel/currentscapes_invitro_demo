@@ -3,6 +3,20 @@ import numpy as np
 
 ## define the CA1 cell
 class CA1(object):
+    """
+    Represents the CA1 pyramidal neuron model, including its geometry, topology,
+    and biophysics.
+
+    Key Features:
+    - Defines the neuron structure (soma, dendrites, axon).
+    - Configures passive and active membrane properties.
+    - Includes mechanisms to adjust properties for spines.
+
+    Methods:
+        __init__(): Initializes the CA1 model, loading morphology and setting up properties.
+        _topol(): Configures the topology and segmentation of neuron sections.
+        _biophys(): Applies biophysical properties to each section.
+    """
 
     def __init__(self):
         h('xopen("simulator/model/CA1.hoc")')
@@ -119,6 +133,5 @@ def propsCA1(model):
     model.dprox = 100          # distance to switch from proximal to distal type
     model.dslope=0.01         # slope of A-type density
 
-#    model.gna = 0 #in original code modulateNa = True
 
 

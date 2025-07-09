@@ -3,8 +3,55 @@ import altair as alt
 from currentscape_visualization.utils import *
 
 
-def plot_currentscape(part_pos, part_neg, vm, taxis, tmin, tmax, filename, return_segs=False, segments_preselected=True,
-                      vmin=-69, vmax=-65, partitionby='type'):
+def plot_currentscape(part_pos: pd.DataFrame, part_neg: pd.DataFrame, vm: np.array, taxis: np.array, tmin: int, tmax: int,
+                      filename: str, return_segs: bool=False, segments_preselected: bool=True,
+                      vmin: int=-69, vmax: int=-65, partitionby: str='type'):
+    """
+    Generates and saves a currentscape plot.
+
+    Args:
+    part_pos : pd.DataFrame
+        The data frame representing positive currents.
+
+    part_neg : pd.DataFrame
+        The data frame representing negative currents.
+
+    vm : np.array
+        Array of membrane potential values.
+
+    taxis : np.array
+        Array of time axis values corresponding to the data.
+
+    tmin : int
+        Start timepoint of the visualization.
+
+    tmax : int
+        End timepoint of the simulation
+
+    filename : str
+        The name of the file where the currentscape will be saved.
+
+    return_segs : bool, default=False
+        If True, returns currentscape data instead of only saving the file.
+
+    segments_preselected : bool, default=True
+        If True, assumes the provided data contains already selected timepoints
+
+    vmin : int, default=-69
+        Minimum membrane potential value for visualization.
+
+    vmax : int, default=-65
+        Maximum membrane potential value for visualization.
+
+    partitionby : str, default='type'
+        Sets partitioning strategy. Can be 'type' or 'region'-specific.
+
+    Returns
+    list of pd.DataFrame, np.array or None
+        A list containing the partitioned negative currents, positive currents, and membrane potential values,
+        if return_segs is True. Otherwise, None.
+    """
+    print("Generating currentscape...")
     if (segments_preselected):
         part_pos_seg = part_pos
         part_neg_seg = part_neg
@@ -25,5 +72,6 @@ def plot_currentscape(part_pos, part_neg, vm, taxis, tmin, tmax, filename, retur
     # Create currentscape
     currentscape = combine_charts(vm_chart, totalpos, currshares_pos, currshares_neg)
     currentscape.save(filename)
+    print("Currentscape saved to " + filename)
     if (return_segs):
         return [part_neg_seg, part_pos_seg, vm_seg]

@@ -6,26 +6,20 @@ from altair import VConcatChart
 
 
 def get_total_pos(df: pd.DataFrame) -> pd.Series:
-    # df = df.drop('itype', axis=1)
-    # assert (df >= 0).all().all()
     return df.sum(axis=0)
 
 
 def get_total_neg(df: pd.DataFrame) -> pd.Series:
-    # df = df.drop('itype', axis=1)
-    # assert (df <= 0).all().all()
     return df.sum(axis=0)
 
 
 def get_cnorm_pos(df: pd.DataFrame) -> pd.DataFrame:
     total = get_total_pos(df)
-    # df = df.set_index('itype')
     return df.div(total, axis=1)
 
 
 def get_cnorm_neg(df: pd.DataFrame) -> pd.DataFrame:
     total = get_total_neg(df)
-    # df = df.set_index('itype')
     return df.div(total, axis=1)
 
 def create_vm_chart(v: np.ndarray, t: np.ndarray, vmin=-68, vmax=-63) -> alt.Chart:
@@ -45,31 +39,12 @@ def create_vm_chart(v: np.ndarray, t: np.ndarray, vmin=-68, vmax=-63) -> alt.Cha
     )
     return chart
 
-# def create_vm_chart_black(v: np.ndarray, t: np.ndarray, vmin=-70, vmax=50) -> alt.Chart:
-#     # Create a DataFrame with the time and potential data
-#     df = pd.DataFrame({
-#         'Time': t,
-#         'Vm': v
-#     })
-
-#     # Create a line chart using Altair
-#     chart = alt.Chart(df).mark_line().encode(
-#         x=alt.X('Time:Q', title=None, axis=alt.Axis(ticks=False, grid=False, labels=False), scale=alt.Scale(domain=[np.min(t), np.max(t)])),
-#         y=alt.Y('Vm:Q', title='V (mV)', axis=alt.Axis(grid=False, labelFontSize=18, titleFontSize=18, titleFontWeight='normal'), scale=alt.Scale(domain=[vmin, vmax]))
-#     ).properties(
-#         width=1000,
-#         height=200, 
-#     ).configure(background='#505050')
-#     return chart
-
-
 
 def create_currsum_pos_chart(df: pd.DataFrame, t: np.ndarray) -> alt.Chart:
     total = get_total_pos(df)
     imin = 0.0035  # 10**(np.floor(np.log10(np.min(total))))
     ivector = np.ones(len(t)) * imin
     df_total = pd.DataFrame({'Current': total, 'ibase': ivector, 'Time': t})
-    print(np.min(total), np.max(total))
     if (np.min(total) < 0.1):
         Iticks = [0.0035, 0.008, 0.02, 0.04]
         Idomain = [0.0035, 0.04]
@@ -184,17 +159,9 @@ def combine_charts(vm: alt.Chart, totalpos: alt.Chart, currshares_pos: alt.Chart
         spacing=0
     )
 
-    # chart = alt.vconcat(chart, totalneg).properties(
-    #     spacing=0
-    # )
-
     chart = alt.vconcat(vm, chart).properties(
         spacing=0
     ).configure_view(
     stroke=None
     )
     return chart
-
-
-if __name__ == '__main__':
-    pass

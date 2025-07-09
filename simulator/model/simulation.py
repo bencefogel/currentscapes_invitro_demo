@@ -1,16 +1,39 @@
 from neuron import h, gui
 import numpy as np
 
+from simulator.model.ca1_model import CA1
 from simulator.model.utils.record_intrinsic import record_intrinsic_currents, preprocess_intrinsic_data
 from simulator.model.utils.record_synaptic import record_synaptic_currents, preprocess_synaptic_data
 from simulator.model.utils.record_membrane_potential import record_membrane_potential, preprocess_membrane_potential_data
 
 
-def simulate(model, tstop):
+def simulate(model: CA1, tstop: float) -> dict:
+    """
+    Simulate the activity of a CA1 model.
+
+    This function initializes and runs a simulation using the NEURON simulation environment.
+    It records various physiological data, including membrane potential, intrinsic currents,
+    and synaptic currents, for later analysis. The time series data is processed and
+    downsampled to facilitate further evaluation.
+
+    Parameters:
+        model (CA1): The biophysical model to be simulated.
+        tstop (float): The simulation end time in milliseconds.
+
+    Returns:
+        dict: A dictionary containing the processed simulation data. The dictionary keys
+        are:
+            - 'membrane_potential_data': A list with membrane potential segments and
+              corresponding processed arrays.
+            - 'intrinsic_data': A list with intrinsic current segments and corresponding
+              processed arrays.
+            - 'synaptic_data': A list with synaptic current segments and corresponding
+              processed arrays.
+            - 'taxis': A downsampled time axis array.
+    """
     h.CVode().active(True)
     h.CVode().atol((1e-3))
 
-    # Record time array
     trec = h.Vector()
     trec.record(h._ref_t)
 

@@ -1,27 +1,42 @@
+import os
 import pandas as pd
 import numpy as np
-from pandas import DataFrame, Series
-from tqdm import tqdm
-import os
-
-from currentscape_calculator.partitioning_order import create_directed_graph, get_partitioning_order
+import pandas as pd
 import networkx as nx
 
+from tqdm import tqdm
+from currentscape_calculator.partitioning_order import create_directed_graph, get_partitioning_order
 
-def partition_iax(im: DataFrame, iax: DataFrame, timepoints, target: str, partition_by='type',
-                  regions_list_directory=None) -> tuple[DataFrame, DataFrame]:
+
+
+def partition_iax(im: pd.DataFrame, iax: pd.DataFrame, timepoints: list, target: str, partition_by: str,
+                  regions_list_directory: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Partitions axial currents into membrane currents across multiple time points and updates a copy of the membrane currents DataFrame.
+    Partitions the axial currents based on the target node and partitioning criteria.
+    It prepares region-specific indices and recalculates membrane if required.
 
-    Parameters:
-        im (DataFrame): A DataFrame containing membrane currents for each node and time point.
-        iax (DataFrame): A DataFrame containing axial currents for each reference-parent pair and time point.
-        timepoints (list): A list of time points for which the partitioning process is performed.
-        target (str): The target node to start the partitioning traversal from.
+    Args:
+        im : DataFrame
+            A DataFrame containing membrane currents indexed by segments and current type.
+        iax : DataFrame
+            A DataFrame containing axial currents indexed by reference and parent segments.
+        timepoints : list
+            A list of time points at which the partitioning is performed.
+        target : str
+            The name of the target node segment for partitioning.
+        partition_by : str
+            Partitioning strategy. Can be either 'type' or 'region'
+        regions_list_directory : str
+            Directory path containing data about regions for each dendritic branch. This is necessary when partitioning
+            by 'region'.
 
-    Returns:
-        tuple[DataFrame, DataFrame]: A modified copy of `im` with updated membrane currents after partitioning axial currents for all time points. Positive and negative currents are in separate dataframes.
+    Returns
+        tuple[DataFrame, DataFrame]
+            A tuple containing two DataFrames:
+            1. Positive membrane currents indexed by the target node and specified timepoints.
+            2. Negative membrane currents indexed by the target node and specified timepoints.
     """
+
     if (target != 'soma'):
         print('updating current files to the new target node:', target)
         ## we need to start with modifying the DataFrames containing the axial and membrane currents
@@ -105,6 +120,7 @@ def merge_dendritic_section_imembrane(df: pd.DataFrame, section: str) -> pd.Data
         A new DataFrame that combines the original data excluding the selected dendritic section and the summed data
         for that section grouped by `itype`. The new DataFrame has the dendritic segment and `itype` as a two-level index.
     """
+
     df_dend = df[df.index.get_level_values(0).str.startswith(f'{section}(')]  # select all rows belonging to the given segment
     df_summed_by_itype = df_dend.groupby(level='itype').sum()  # sum dataframe by current type for each time point
     df_summed_by_itype = df_summed_by_itype.reset_index()
@@ -122,24 +138,21 @@ def merge_dendritic_section_iax(df: pd.DataFrame, section: str) -> pd.DataFrame:
    (i.e., connections between parent and children nodes) and merges them back into the dataframe after
    renaming and removing internal connections.
 
-   Parameters:
-   ----------
-   df : pd.DataFrame
-       The dataframe containing axial current connections, with a multi-level index that includes 'ref'
-       (reference) and 'par' (parent) segments.
-   section : str
-       The dendritic section identifier for which external axial current connections are to be merged.
+   Args:
+       df : pd.DataFrame
+           The dataframe containing axial current connections, with a multi-level index that includes 'ref'
+           (reference) and 'par' (parent) segments.
+       section : str
+           The dendritic section identifier for which external axial current connections are to be merged.
 
    Returns:
-   -------
-   pd.DataFrame
-       A dataframe with the external axial current connections of the specified dendritic segment merged back
-       into the original dataframe, while internal connections are removed.
+       pd.DataFrame
+           A dataframe with the external axial current connections of the specified dendritic segment merged back
+           into the original dataframe, while internal connections are removed.
 
    Notes:
-   ------
-   - Internal axial current connections, both as reference and parent, are removed from the dataframe.
-   - The function specifically renames certain index values that correspond to internal and section-end-external segments.
+       - Internal axial current connections, both as reference and parent, are removed from the dataframe.
+       - The function specifically renames certain index values that correspond to internal and section-end-external segments.
    """
     # Select external iax connections (between parent and children nodes)
     # these are just references to the original dataframe, not making copies
@@ -149,12 +162,10 @@ def merge_dendritic_section_iax(df: pd.DataFrame, section: str) -> pd.DataFrame:
     df_external = pd.concat([df_segment_ref, df_segment_par]).drop_duplicates(keep=False)  # this keeps rows that are unique (meaning that they connect to external nodes)
 
     # Rename index
-    # rename_dict = {'dend5_0111111111111111111(0.0454545)': section,  # currently not automatic: first internal and section-end-external segments should be renamed
-    #                'dend5_0111111111111111111(1)': section}
     iref = df.index.get_level_values('ref').str.startswith(f'{section}(')
     first_internal_name = df.index.get_level_values('ref')[iref].sort_values()[0] # we assume that sorting will sort it correctly: The first element is the first internal node
     last_terminal_name = df.index.get_level_values('ref')[iref].sort_values()[-1] # and the last is the terminal node
-    rename_dict = {first_internal_name: section,  # I made this automatic, but have not tested...
+    rename_dict = {first_internal_name: section,
                    last_terminal_name: section}
     df_external.rename(index=rename_dict, level='ref', inplace=True)
     df_external.rename(index=rename_dict, level='par', inplace=True)
@@ -175,27 +186,24 @@ def update_root_node(df_merged: pd.DataFrame, section: str) -> pd.DataFrame:
     This function modifies the reference-parent pairs and axial current values of the edges on the (shortest) path
     between the new root and the original root (soma), updating the dataframe accordingly.
 
-    Parameters:
-    ----------
-    df_merged : pd.DataFrame
-        A dataframe containing axial current (iax) data with a multi-level index consisting of reference ('ref')
-        and parent ('par') segments. The new root node should be represented by a section where the segment values
-        have already been merged.
-    section : str
-        The section identifier representing the new root node.
+    Args:
+        df_merged : pd.DataFrame
+            A dataframe containing axial current (iax) data with a multi-level index consisting of reference ('ref')
+            and parent ('par') segments. The new root node should be represented by a section where the segment values
+            have already been merged.
+        section : str
+            The section identifier representing the new root node.
 
     Returns:
-    -------
-    pd.DataFrame
-        A new dataframe where the axial current connections along the shortest path between the new root and
-        the original root ('soma') have been updated by switching the reference-parent pairs and negating the
-        axial current values.
+        pd.DataFrame
+            A new dataframe where the axial current connections along the shortest path between the new root and
+            the original root ('soma') have been updated by switching the reference-parent pairs and negating the
+            axial current values.
 
     Notes:
-    ------
-    - The reference and parent segments of the edges on the shortest path are switched, and the axial current values
-      are multiplied by -1 to reflect the change in direction.
-    - The resulting dataframe is re-indexed and returned, with the reference ('ref') and parent ('par') columns properly set.
+        - The reference and parent segments of the edges on the shortest path are switched, and the axial current values
+          are multiplied by -1 to reflect the change in direction.
+        - The resulting dataframe is re-indexed and returned, with the reference ('ref') and parent ('par') columns properly set.
     """
     # The input of this function should be a dataframe where the new root node is a section where the segment values are already merged
     dg = create_directed_graph(df_merged, df_merged.columns[0])
@@ -228,29 +236,27 @@ def create_region_specific_index(df: pd.DataFrame, input_dir: str) -> pd.DataFra
     Creates region-specific index by mapping each segment to a predefined region
     and categorizing intrinsic and synaptic types.
 
-    Parameters:
-    -----------
-    df : pd.DataFrame
-        The dataframe containing the original multi-indexed data with 'segment' and 'itype' columns
+    Args:
+        df : pd.DataFrame
+            The dataframe containing the original multi-indexed data with 'segment' and 'itype' columns
 
-    input_dir : str
-        The directory containing text files corresponding to different regions.
-        Each file should have a list of segment names associated with that region.
+        input_dir : str
+            The directory containing text files corresponding to different regions.
+            Each file should have a list of segment names associated with that region.
 
     Returns:
-    --------
-    pd.DataFrame
-        A new DataFrame with:
-        - 'segment': The original segment names.
-        - 'itype': A combined label of the mapped region and current type (e.g., 'axon_intrinsic').
+        pd.DataFrame
+            A new DataFrame with:
+            - 'segment': The original segment names.
+            - 'itype': A combined label of the mapped region and current type (e.g., 'axon_intrinsic').
 
     Notes:
-    ------
-    - The function reads predefined region text files and maps segments to their respective regions.
-    - If a segment is not found in any region list, it is labeled as 'Unknown'.
-    - The function also categorizes current types as either 'intrinsic' or 'synaptic'.
-    - The final 'itype' column is a combination of the detected region and type.
+        - The function reads predefined region text files and maps segments to their respective regions.
+        - If a segment is not found in any region list, it is labeled as 'Unknown'.
+        - The function also categorizes current types as either 'intrinsic' or 'synaptic'.
+        - The final 'itype' column is a combination of the detected region and type.
     """
+
     fnames_regions = ['distal', 'oblique_trunk', 'axon', 'basal', 'soma']
 
     # Create a dictionary with each region's file contents split by newline
@@ -299,8 +305,8 @@ def create_region_specific_index(df: pd.DataFrame, input_dir: str) -> pd.DataFra
     region_specific_index['itype'] = combined_region_and_type
     return region_specific_index
 
-def calc_im_by_region(df: pd.DataFrame) -> pd.DataFrame:
 
+def calc_im_by_region(df: pd.DataFrame) -> pd.DataFrame:
     # Extract unique segments and currents (itypes)
     segments = df.index.get_level_values(0).unique()
     currents = df.index.get_level_values(1).unique()
@@ -323,7 +329,7 @@ def calc_im_by_region(df: pd.DataFrame) -> pd.DataFrame:
     df_new = df_new.astype(np.float32)
     return df_new
 
-def partition_iax_single(ref: str, par: str, tp: int, im_signed: DataFrame, iax_tp: float) -> None:
+def partition_iax_single(ref: str, par: str, tp: int, im_signed: pd.DataFrame, iax_tp: float) -> None:
     """
     Partitions axial currents at a specific time point into membrane currents and updates the parent node's membrane currents.
 

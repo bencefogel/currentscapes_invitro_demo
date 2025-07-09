@@ -1,9 +1,8 @@
 import networkx as nx
-from pandas import DataFrame
-from networkx import DiGraph
+import pandas as pd
 
 
-def create_directed_graph(iax: DataFrame, tp: int) -> DiGraph:
+def create_directed_graph(iax: pd.DataFrame, tp: int) -> nx.DiGraph:
     """
     Creates a directed graph based on the axial current value (iax) at a specified time point (tp).
 
@@ -31,7 +30,7 @@ def create_directed_graph(iax: DataFrame, tp: int) -> DiGraph:
     return dg
 
 
-def get_partitioning_order(dg: DiGraph, target: str, direction: str) -> list[tuple[str, str]]:
+def get_partitioning_order(dg: nx.DiGraph, target: str, direction: str) -> list[tuple[str, str]]:
     """
     Determines the partitioning order of nodes in a directed graph.
 
@@ -52,7 +51,7 @@ def get_partitioning_order(dg: DiGraph, target: str, direction: str) -> list[tup
     return traversal_methods[direction](dg, target)
 
 
-def get_traversal_order_out(dg: DiGraph, target: str) -> list[tuple[str, str]]:
+def get_traversal_order_out(dg: nx.DiGraph, target: str) -> list[tuple[str, str]]:
     """
     Computes the outward traversal order from a target node in a directed graph.
 
@@ -77,7 +76,7 @@ def get_traversal_order_out(dg: DiGraph, target: str) -> list[tuple[str, str]]:
     return node_pairs_out
 
 
-def get_traversal_order_in(dg: DiGraph, target: str) -> list[tuple[str, str]]:
+def get_traversal_order_in(dg: nx.DiGraph, target: str) -> list[tuple[str, str]]:
     """
     Computes the inward traversal order towards a target node in a directed graph.
 

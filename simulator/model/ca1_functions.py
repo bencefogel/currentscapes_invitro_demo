@@ -1,14 +1,38 @@
-from neuron import h
 import sys
 import numpy as np
 
+from neuron import h
+from simulator.model.ca1_model import CA1
 h('objref nil')
 
 modpath = 'simulator/model/density_mechs'
 h.nrn_load_dll(modpath + '\\nrnmech.dll')
 
 
-def init_activeCA1(model):
+def init_activeCA1(model: CA1, ca: bool) -> None:
+    """
+    Initializes active properties within a model neuron, setting up channel
+    densities, locations, and dependencies on distance for various regions of
+    the neuron including soma, axon, dendrites, apical and basal sections.
+
+    Args:
+        model: The model neuron object to be configured.
+        ca: Whether to have R-type Ca2+ (and slow K+) active or not.
+
+    Modifies:
+        The provided `model` by inserting ion channels (e.g., 'nax', 'kdr',
+        'kap', 'kad', 'nad', etc.), setting their densities for respective
+        regions, and adjusting properties based on distance from the soma for
+        apical dendrites and primary apical trunks.
+
+    Note:
+        The configuration includes:
+        - Axonal initial segments and dendritic regions.
+        - Distance-dependent A-type potassium channels ('kap' and 'kad').
+        - Sodium channel ('nax') properties with distance scaling.
+        - Specific conductances for calcium ('car') and slow potassium ('kslow')
+          channels added to apical dendritic sections.
+    """
     model.soma.insert('nax')
     model.soma.gbar_nax = model.gna_soma
     model.soma.insert('kdr')
@@ -131,155 +155,36 @@ def init_activeCA1(model):
             seg.gkabar_kap = model.gka
 
     # Adding Ca and K_slow conductances
-    for sec in h.all_apicals:
-        sec.insert('car')
-        sec.gmax_car = 0.006  # 0.007
-        sec.insert('kslow')
-        sec.gmax_kslow = 0.001  # 0.003
+    if ca:
+        for sec in h.all_apicals:
+            sec.insert('car')
+            sec.gmax_car = 0.006
+            sec.insert('kslow')
+            sec.gmax_kslow = 0.001
 
 
-def addClustLocs(model, nsyn, Nclust, Ncell_per_clust, seed, midle=False, clocs=None, Lmin=60):
-    # Nclust clusters in a random background innervation
-    # clusters are ADDED to the random background
-    # clustering:
-    #     1. select pre clusters by genClustStarts
-    #     2. generate random Elocs
-    #     3. select post cluster locations by genClusts
-    #     4. add post cluster locations
-    # output: Elocs: list with [dend id, location]
+def add_syns(model: CA1, Elocs: list[list[int, float]]):
+    """
+    Adds AMPA and NMDA synapses to the specified locations on the model's neuronal structure.
+    This function defines two types of synaptic channels (AMPA and NMDA) with their specific
+    parameters and attaches them to the corresponding locations in the dendrites of
+    the model.
 
-    # 1. presynaptic partners belonging to the clusters
-    if midle == True:  # clusters start at the middle of the maze
-        Nsyn_in_clust = Nclust * Ncell_per_clust  # number of synapses in clusters
-        Nsyn_rand = nsyn - Nsyn_in_clust
-        istart = 880  # int(Nsyn_rand / 2)
-        iend = 1120  # int(Nsyn_rand / 2) + Nsyn_in_clust
-        # istart = int(Nsyn_rand / 2)
-        # iend = int(Nsyn_rand / 2) + Nsyn_in_clust
-        prestarts = np.arange(istart, iend, Ncell_per_clust)
+    Parameters:
+        model (CA1): The neuronal model to which the synapses will be added.
+        Elocs (list[list[int, float]]): A list of locations where synapses will
+            be added. Each location is represented as a list containing two elements:
+            an integer representing the index of a dendritic section,
+            and a float representing the position along the section.
+    """
 
-    # index of pre cells IN clusters
-    ind_clustpre = np.arange(prestarts[0], prestarts[0] + Ncell_per_clust)
-    if Nclust > 0:
-        for j in np.arange(1, Nclust):
-            istart = prestarts[j]
-            iend = prestarts[j] + Ncell_per_clust
-            ind_clustpre = np.concatenate((ind_clustpre, np.arange(istart, iend)))
-
-    # 2. random locations - background synapses
-    if (Nsyn_rand):
-        bg_Elocs = genRandomLocs(model, Nsyn_rand, seed=100 * seed + 1)
-        np.random.seed(100 * seed + 2)
-        np.random.shuffle(bg_Elocs)
-    else:
-        bg_Elocs = []
-
-    # 3. clustered locations
-    # def genClusts(Nclust, Ncell_per_clust, minL, seed):
-    clustered_Elocs, clDends = genClusts(model, Nclust, Ncell_per_clust, Lmin, seed=100 * seed + 4, clocs=clocs)
-    # clustered_Elocs = genClusts(Nclust, Ncell_per_clust, 1, seed=100*seed+4)
-
-    # 4. cycle through all clusters and add the post from either the
-    #       random or the post cluster locations
-    j = 0  # POST - clustered
-    k = 0  # POST - random
-    Elocs = bg_Elocs + clustered_Elocs
-    for i in np.arange(nsyn):  # PRE
-        if i in ind_clustpre:  # take it from the cluster - list
-            Elocs[i] = clustered_Elocs[j]
-            j = j + 1
-        else:
-            Elocs[i] = bg_Elocs[k]
-            k = k + 1
-    return Elocs, ind_clustpre, clDends
-
-
-def genRandomLocs(model, nsyn, seed, dend_ids=None):
-    # randomly choose a dendritic branch, proportionally to its length
-    np.random.seed(seed)
-    nden = len(model.dends)
-    Ldends = np.zeros(nden)
-    for ii in np.arange(0, nden): Ldends[ii] = model.dends[ii].L
-
-    Pdends = Ldends / sum(Ldends)
-    if dend_ids is not None:
-        Pdends = np.zeros(nden)
-        for dend in dend_ids:
-            Pdends[dend] = Ldends[dend] / sum(Ldends)
-        Pdends = Pdends / sum(Pdends)
-
-    Ndends = np.random.multinomial(nsyn, Pdends)
-
-    #  and insert a nsyn synapses at random locations within the branch
-    locs = []
-    for dend in np.arange(0, nden):  #
-        nsyn_dend = Ndends[dend]
-        if (nsyn_dend > 0):
-            locs_dend = np.sort(np.random.uniform(0, 1, nsyn_dend))
-            for s in np.arange(0, nsyn_dend):
-                locs.append([dend, locs_dend[s]])
-
-    return locs
-
-
-def genClusts(model, Nclust, Ncell_per_clust, minL, seed, clocs=None):
-    # randomly choose a dendritic branch, larger than minL for clustered synapses
-    # clocs:
-    if (minL < Ncell_per_clust):
-        print('error: cluster size mismatch, stop simulation! Number of cells per cluster (1 um inter-spine distance):',
-              Ncell_per_clust, ', minL:', minL)
-        sys.exit(1)
-    np.random.seed(seed)
-    nden = len(model.dends)
-    Ldends = np.zeros(nden)
-    for ii in np.arange(0, nden):
-        Ldends[ii] = model.dends[ii].L
-    idends = np.flatnonzero(Ldends > minL)
-
-    replace_clusts = False
-    if (Nclust > len(idends)):
-        print('warning: cluster number mismatch, multiple clusters are allocated to the same branch! Nclust:', Nclust,
-              ', number of available branches:', len(idends), ', minL:', minL)
-        replace_clusts = True
-
-    # if some dendrites are preselected ...
-    if clocs is not None:
-        k = len(clocs)
-        clDends1 = clocs  # we choose those dendrites
-        if (Nclust > k):  # we choose randomly from the others
-            if (replace_clusts == False):
-                idends = np.setdiff1d(idends, clocs)
-            clDends2 = np.random.choice(idends, Nclust - k, replace=replace_clusts)
-            clDends = np.concatenate((clDends1, clDends2))
-        else:
-            clDends = np.array(clDends1)
-
-    else:
-        clDends = np.random.choice(idends, Nclust, replace=replace_clusts)
-    #  and insert a nsyn synapses at random locations within the branch
-
-    locs = []
-    i_dend = 0
-    for dend in clDends:
-        dend = int(dend)
-        locstart = np.random.uniform(0, 1 - Ncell_per_clust / Ldends[dend], 1)
-        if clocs is not None:
-            if i_dend < k:
-                locstart = (1 - Ncell_per_clust / Ldends[dend]) / 2
-        for s in np.arange(0, Ncell_per_clust):
-            locs.append([dend, (s / Ldends[dend] + locstart).item()])  # 1 um distance between spines
-        i_dend = i_dend + 1
-    return locs, clDends
-
-
-def add_syns(model, Elocs):
     model.AMPAlist = []
     model.ncAMPAlist = []
-    AMPA_gmax = 0.6 / 1000.  # Set in nS and convert to muS data.Agmax
+    AMPA_gmax = 0.6 / 1000.  # Set in nS and convert to muS
 
     model.NMDAlist = []
     model.ncNMDAlist = []
-    NMDA_gmax = 0.8 / 1000.  # Set in nS and convert to muS data.Ngmax
+    NMDA_gmax = 0.8 / 1000.  # Set in nS and convert to muS
 
     for loc in Elocs:
         locInd = int(loc[0])
@@ -290,22 +195,42 @@ def add_syns(model, Elocs):
             synpos = float(loc[1])
 
         AMPA = h.Exp2Syn(synpos, sec=synloc)
-        AMPA.tau1 = 0.1  # data.Atau1
-        AMPA.tau2 = 1  # data.Atau2
+        AMPA.tau1 = 0.1
+        AMPA.tau2 = 1
         NC = h.NetCon(h.nil, AMPA, 0, 0, AMPA_gmax)  # NetCon(source, target, threshold, delay, weight)
         model.AMPAlist.append(AMPA)
         model.ncAMPAlist.append(NC)
 
         NMDA = h.Exp2SynNMDA(synpos, sec=synloc)
-        NMDA.tau1 = 2  # data.Ntau1
-        NMDA.tau2 = 50  # data.Ntau2
+        NMDA.tau1 = 2
+        NMDA.tau2 = 50
         NC = h.NetCon(h.nil, NMDA, 0, 0, NMDA_gmax)
         model.NMDAlist.append(NMDA)
         model.ncNMDAlist.append(NC)
 
 
-def genDendLocs(stimulated_dend=108, nsyn=30, spread=[0.4, 0.6]):
-    # insert nsyn synapses to dendrites dends, uniform spread within a branch
+def genDendLocs(stimulated_dend: int, nsyn: int, spread: list[float] = [0.4, 0.6]) -> list[list[int, float]]:
+    """
+    Generate dendritic locations for synapses.
+
+    This function generates a list of dendritic locations for synaptic stimulation. Synapses
+    are placed uniformly on a specific dendrite within a defined range (spread). Each location
+    includes the dendrite identifier and the relative position along the dendrite.
+
+    Parameters:
+    stimulated_dend: int
+        Identifier of the dendrite where synapses will be placed.
+    nsyn: int
+        The number of synapses to be placed on the dendrite.
+    spread: list[float]
+        A list with two float values defining the range for synapse placement along
+        the dendrite, given as [start, end]. The default range is [0.4, 0.6].
+
+    Returns:
+    list[list[int, float]]
+        A list of locations, where each location is represented as a list containing
+        the dendrite identifier (int) and the relative position along the dendrite (float).
+    """
     locs = []
 
     isd = (spread[1]-spread[0])/float(nsyn)

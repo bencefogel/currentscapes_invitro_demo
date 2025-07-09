@@ -75,17 +75,20 @@ def preprocess_intrinsic_data(intrinsic_segments, intrinsic_currents, taxis_uniq
     segment_dict = {}
     current_dict = {}
     for current_type in intrinsic_segments.keys():
-        segments_array = np.array(intrinsic_segments[current_type]).astype('str')
+        try:
+            segments_array = np.array(intrinsic_segments[current_type]).astype('str')
 
-        # preprocess currents data (select unique indices, downsample to 5kHz)
-        currents_array = np.array(intrinsic_currents[current_type])
-        currents_unique = currents_array[:,index_unique]
+            # preprocess currents data (select unique indices, downsample to 5kHz)
+            currents_array = np.array(intrinsic_currents[current_type])
+            currents_unique = currents_array[:,index_unique]
 
-        x = int((max(taxis_unique)) * 5)  # Number of downsampled points for 5kHz downsampling, (max/1000)*5000
-        taxis_downsampled = np.linspace(min(taxis_unique), max(taxis_unique), x)
-        currents_downsampled = np.array([
-            np.interp(taxis_downsampled, taxis_unique, row) for row in currents_unique
-        ])
-        segment_dict[current_type] = segments_array
-        current_dict[current_type] = currents_downsampled
+            x = int((max(taxis_unique)) * 5)  # Number of downsampled points for 5kHz downsampling, (max/1000)*5000
+            taxis_downsampled = np.linspace(min(taxis_unique), max(taxis_unique), x)
+            currents_downsampled = np.array([
+                np.interp(taxis_downsampled, taxis_unique, row) for row in currents_unique
+            ])
+            segment_dict[current_type] = segments_array
+            current_dict[current_type] = currents_downsampled
+        except IndexError:  # if CaR and Kslow are inactive
+            continue
     return segment_dict, current_dict

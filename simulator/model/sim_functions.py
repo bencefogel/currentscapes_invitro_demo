@@ -1,26 +1,23 @@
 import numpy as np
-
 import simulator.model.simulation as simulation
-from numpy import loadtxt
 
 
-def SIM_nsynIteration(model, maxNsyn, nsyn, tInterval, onset, direction='IN', tstop=300):
-    # next, synapses are activated together
-    etimes = genDSinput(nsyn, maxNsyn, tInterval, onset, direction)
+def SIM_nsynIteration(model, nsyn, t_interval, onset, direction, t_stop):
+    etimes = genDSinput(nsyn, t_interval, onset, direction)
     fih = simulation.h.FInitializeHandler(1, lambda: initSpikes_dend(model, etimes))
-    simulation_data = simulation.simulate(model, tstop)
+    simulation_data = simulation.simulate(model, t_stop)
     simulation_data['etimes'] = etimes
     return simulation_data
 
 
-def genDSinput(nsyn, Nmax, tInterval, onset, direction='OUT'):
+def genDSinput(nsyn, t_interval, onset, direction):
     # a single train with nsyn inputs - either in the in or in the out direction
     times = np.zeros([nsyn, 2])
-    if (direction=='OUT'):
-        times[:,0] = np.arange(0, nsyn)
+    if direction == 'OUT':
+        times[:, 0] = np.arange(0, nsyn)
     else:
-        times[:,0] = np.arange(Nmax-1, Nmax-nsyn-1, -1)
-    times[:,1] = np.arange(0, nsyn*tInterval, tInterval)[0:nsyn] + onset
+        times[:, 0] = np.arange(nsyn-1, -1, -1)  # Reverse order for 'IN' direction
+    times[:, 1] = np.arange(0, nsyn * t_interval, t_interval)[0:nsyn] + onset
     return times
 
 
