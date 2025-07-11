@@ -39,8 +39,8 @@ Navigate to the folder containing the `.mod` files:
 
 ```bash
 cd currentscapes_demo/simulator/model/density_mechs
-nrnivmodl
 ```
+And run `nrnivmodl` tool from NEURON.
 
 This will compile all mechanism files required for the biophysical model.  
 

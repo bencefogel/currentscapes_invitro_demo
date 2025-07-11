@@ -1,15 +1,15 @@
 from CurrentscapePipeline import CurrentscapePipeline
 
 output_dir = 'output'
-target = 'soma'
-partitioning = 'type'
+target = 'soma'  # can be any dendrite too e.g. 'dend5_0'
+partitioning = 'type'  # can be 'type' or 'region'
 ca = False
 stim_dend = 108
-direction = 'IN'
+direction = 'IN'  # can be 'IN' or 'OUT'
 tstop = 380
 tmin = 280
 tmax = 380
-nsyn = 8
+nsyn = 8  # nsyn values used in the article: 8, 10, 15, 20
 t_interval = 0.3
 onset = 300
 currentscape_filename = f'currentscape_Fig3C_ca{ca}_{partitioning}_{nsyn}.pdf'
