@@ -19,7 +19,7 @@ class CurrentscapeCalculator:
         self.partitioning_strategy = partitioning_strategy
         self.regions_list_directory = regions_list_directory
 
-    def calculate_currentscape(self, iax: pd.DataFrame, im: pd.DataFrame, taxis: np.array, tmin: int, tmax: int):
+    def calculate_currentscape(self, iax: str, im: str, taxis: np.array, tmin: int, tmax: int):
         """
             This function processes the input dataframes containing axial currents (iax)
             and membrane currents (im), then computes and partitions the
@@ -28,9 +28,9 @@ class CurrentscapeCalculator:
             partitioning is applied across the entire dataframe.
 
             Args:
-                iax (pd.DataFrame): Dataframe containing axial current data, read
+                iax (str): Path to Dataframe containing axial current data, read
                     from a CSV file indexed by multiindex (0, 1) with integer-type labeled columns.
-                im (pd.DataFrame): Dataframe containing membrane current data, read
+                im (str): Path to Dataframe containing membrane current data, read
                     from a CSV file indexed by multiindex (0, 1) with integer-type labeled columns.
                 taxis (np.array): Array containing time values corresponding to the currents data.
                 tmin (int): Minimum time value for the selected time interval.
@@ -40,6 +40,7 @@ class CurrentscapeCalculator:
                 Tuple: Contains two partitioned portions of extracellular currents,
                 (im_part_pos, im_part_neg), based on the specified partitioning strategy.
         """
+
         print("Calculating currentscape...")
         # Load data for the given pair of files
         df_iax = pd.read_csv(iax, index_col=[0,1])

@@ -18,4 +18,11 @@ currentscape_filename = f'currentscape_Fig3C_ca{ca}_{partitioning}_{nsyn}.pdf'
 pipeline = CurrentscapePipeline(output_dir, target, partitioning, ca, stim_dend, direction, tstop, tmin, tmax, nsyn,
                                 t_interval, onset, currentscape_filename)
 
-pipeline.run_full_pipeline()
+if pipeline.results_exist():
+    print("Results found. Loading and visualizing only...")
+    pipeline.run_simulation()
+    pipeline.load_results()
+    pipeline.visualize()
+else:
+    print("Results not found. Running full pipeline...")
+    pipeline.run_full_pipeline()

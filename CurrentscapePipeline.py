@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 
 from currentscape_calculator.CurrentscapeCalculator import CurrentscapeCalculator
 from simulator.ModelSimulator import ModelSimulator
@@ -92,11 +93,12 @@ class CurrentscapePipeline:
 
         pre_dir = os.path.join(self.output_dir, 'preprocessed')
         os.makedirs(pre_dir, exist_ok=True)
-        im_path = os.path.join(pre_dir, 'im.csv')
-        iax_path = os.path.join(pre_dir, 'iax.csv')
+        self.im_path = os.path.join(pre_dir, 'im.csv')
+        self.iax_path = os.path.join(pre_dir, 'iax.csv')
 
-        self.im.to_csv(im_path)
-        self.iax.to_csv(iax_path)
+        self.im.to_csv(self.im_path)
+        self.iax.to_csv(self.iax_path)
+        np.save(os.path.join(self.output_dir, 'taxis.npy'), self.taxis)
 
 
     def calculate_currentscape(self):
@@ -138,11 +140,12 @@ class CurrentscapePipeline:
         v_target = np.array(self.simulation_data['membrane_potential_data'][1])[v_idx].squeeze()[
             np.flatnonzero((self.taxis > self.tmin) & (self.taxis < self.tmax))
         ]
-        plot_currentscape(
-            self.part_pos, self.part_neg, v_target, self.taxis, self.tmin, self.tmax,
-            self.currentscape_filename, return_segs=False, segments_preselected=False,
-            partitionby=self.partitioning
-        )
+        currentscape = plot_currentscape(
+                                        self.part_pos, self.part_neg, v_target, self.taxis, self.tmin, self.tmax,
+                                        return_segs=False, segments_preselected=False,
+                                        partitionby=self.partitioning)
+        currentscape.save(os.path.join(self.output_dir, self.currentscape_filename))
+        print("Currentscape saved to " + os.path.join(self.output_dir, self.currentscape_filename))
 
 
     def run_full_pipeline(self):
@@ -156,3 +159,32 @@ class CurrentscapePipeline:
         self.preprocess()
         self.calculate_currentscape()
         self.visualize()
+
+
+    def results_exist(self) -> bool:
+        """
+        Checks if the currentscape results files exist in the specified output directory.
+        """
+        res_dir = os.path.join(self.output_dir, 'results')
+        part_pos_path = os.path.join(res_dir, 'part_pos.csv')
+        part_neg_path = os.path.join(res_dir, 'part_neg.csv')
+
+        return os.path.exists(part_pos_path) and os.path.exists(part_neg_path)
+
+
+    def load_results(self):
+        """
+        Loads existing results from the 'results' folder and sets up internal state for visualization.
+        """
+        res_dir = os.path.join(self.output_dir, 'results')
+        part_pos_path = os.path.join(res_dir, 'part_pos.csv')
+        part_neg_path = os.path.join(res_dir, 'part_neg.csv')
+
+        # Load currentscape partition data
+        self.part_pos = pd.read_csv(part_pos_path, index_col=0)
+        self.part_neg = pd.read_csv(part_neg_path, index_col=0)
+        self.part_pos.columns = self.part_pos.columns.astype(int)
+        self.part_neg.columns = self.part_neg.columns.astype(int)
+
+        # Load simulation time axis and membrane potential to visualize properly
+        self.taxis = np.load(os.path.join(self.output_dir, 'taxis.npy'))

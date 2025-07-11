@@ -13,7 +13,7 @@ class ModelSimulator:
     """
     ModelSimulator is a class that constructs a CA1 hippocampal model, configures synaptic inputs,
     and runs simulations. It manages both the model building process and the
-    execution of simulations, returning the simulation data including membrane potentials,
+    execution of simulations, returning the simulation data including membrane potentials, membrane_currents,
     segment connections and segment areas.
     """
 

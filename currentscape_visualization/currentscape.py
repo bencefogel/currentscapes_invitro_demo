@@ -4,7 +4,7 @@ from currentscape_visualization.utils import *
 
 
 def plot_currentscape(part_pos: pd.DataFrame, part_neg: pd.DataFrame, vm: np.array, taxis: np.array, tmin: int, tmax: int,
-                      filename: str, return_segs: bool=False, segments_preselected: bool=True,
+                      return_segs: bool=False, segments_preselected: bool=True,
                       vmin: int=-69, vmax: int=-65, partitionby: str='type'):
     """
     Generates and saves a currentscape plot.
@@ -70,8 +70,7 @@ def plot_currentscape(part_pos: pd.DataFrame, part_neg: pd.DataFrame, vm: np.arr
     vm_chart = create_vm_chart(vm_seg, t_seg, vmin, vmax)
 
     # Create currentscape
-    currentscape = combine_charts(vm_chart, totalpos, currshares_pos, currshares_neg)
-    currentscape.save(filename)
-    print("Currentscape saved to " + filename)
     if (return_segs):
         return [part_neg_seg, part_pos_seg, vm_seg]
+    else:
+        return combine_charts(vm_chart, totalpos, currshares_pos, currshares_neg)
